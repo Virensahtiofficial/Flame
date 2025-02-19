@@ -1,6 +1,6 @@
 import requests
 import os
-
+os.system("clear")
 # URL van het bestand
 url = "https://raw.githubusercontent.com/Virensahtiofficial/Flame/refs/heads/main/os.py"
 # Specifieke map instellen
