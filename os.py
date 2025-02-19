@@ -14,8 +14,8 @@ from bs4 import BeautifulSoup
 import zipfile
 
 start_time = time.time()
-BASE_DIR = os.path.abspath("voidos/data/0/")
-PASSWORD_FILE = os.path.abspath("voidos/data/password.json")
+BASE_DIR = os.path.abspath("flame/data/0/")
+PASSWORD_FILE = os.path.abspath("flame/data/password.json")
 current_dir = BASE_DIR
 
 os.makedirs(BASE_DIR, exist_ok=True)
