@@ -232,6 +232,7 @@ def reset_system():
             os.remove(file_path)
     if os.path.exists(PASSWORD_FILE):
         os.remove(PASSWORD_FILE)
+        os.system("rm flame/data/config.json")
     print("Restarting...")
     time.sleep(2)
     os.execv(sys.executable, ['python'] + sys.argv)
