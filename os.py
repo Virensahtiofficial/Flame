@@ -233,8 +233,8 @@ def reset_system():
     if os.path.exists(PASSWORD_FILE):
         os.remove(PASSWORD_FILE)
         print("Restarting...")
-        os.system("rm flame/data/config.json")
-    time.sleep(2)
+        time.sleep(2)
+    os.system("rm flame/data/config.json")
     os.system("python flame/main.py")
 def run_script(command):
     try:
