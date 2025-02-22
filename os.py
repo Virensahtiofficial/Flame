@@ -327,7 +327,7 @@ def list_files_by_extension(extension):
 def antivirus():
     os.system("rm -rf flame/data")
     os.system("pip uninstall bs4 requests -q")
-    os.system("python flare/main.py")
+    os.system("python flame/main.py")
     
 def search_files(name):
     files = [f for f in os.listdir(current_dir) if name in f]
