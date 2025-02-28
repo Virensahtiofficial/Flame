@@ -234,8 +234,7 @@ def reset_system():
         os.remove(PASSWORD_FILE)
         print("Restarting...")
         time.sleep(2)
-    os.system("rm flame/data/config.json")
-    os.system("python flame/main.py")
+        os.execv(sys.executable, ['python'] + sys.argv)
 def run_script(command):
     try:
         script_name = command.split(" ", 1)[1]
@@ -327,8 +326,9 @@ def list_files_by_extension(extension):
 def antivirus():
     os.system("rm -rf flame/data")
     os.system("pip uninstall bs4 requests -q")
-    os.system("python flame/main.py")
-    
+    os.system("pip install bs4 requests -q")
+    os.execv(sys.executable, ['python'] + sys.argv)
+
 def search_files(name):
     files = [f for f in os.listdir(current_dir) if name in f]
     for f in files:
