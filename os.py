@@ -234,7 +234,7 @@ def reset_system():
         os.remove(PASSWORD_FILE)
         print("Restarting...")
         time.sleep(2)
-        os.execv(sys.executable, ['python'] + sys.argv)
+        os.system("python flame/os.py")
 def run_script(command):
     try:
         script_name = command.split(" ", 1)[1]
