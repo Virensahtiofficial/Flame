@@ -12,6 +12,7 @@ import time
 import requests
 from bs4 import BeautifulSoup
 import zipfile
+import signal
 
 start_time = time.time()
 BASE_DIR = os.path.abspath("flame/data/0/")
@@ -20,6 +21,7 @@ current_dir = BASE_DIR
 LOG_DIR = os.path.join(BASE_DIR, "logs")
 os.makedirs(LOG_DIR, exist_ok=True)
 os.makedirs(BASE_DIR, exist_ok=True)
+
 
 def zip_file(source, zip_name):
     source_path = os.path.join(current_dir, source)
@@ -436,6 +438,11 @@ def time_from_date():
         print(f"Time since {date_str}: {time_diff}")
     except ValueError:
         print("Invalid date format. Please use YYYY-MM-DD.")
+
+
+def handle_interrupt(signal, frame):
+    pass
+signal.signal(signal.SIGINT, handle_interrupt)
 
 def main():
     boot()
