@@ -17,48 +17,62 @@ start_time = time.time()
 BASE_DIR = os.path.abspath("flame/data/0/")
 PASSWORD_FILE = os.path.abspath("flame/data/password.json")
 current_dir = BASE_DIR
-
+LOG_DIR = os.path.join(BASE_DIR, "logs")
+os.makedirs(LOG_DIR, exist_ok=True)
 os.makedirs(BASE_DIR, exist_ok=True)
 
 def zip_file(source, zip_name):
     source_path = os.path.join(current_dir, source)
     zip_path = os.path.join(current_dir, zip_name)
 
-    if os.path.exists(source_path):
-        with zipfile.ZipFile(zip_path, 'w') as zipf:
+    if not os.path.exists(source_path):
+        print("Error: Source file or folder not found.")
+        return
+
+    try:
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
             if os.path.isdir(source_path):
                 for root, _, files in os.walk(source_path):
                     for file in files:
-                        file_path = os.path.join(root, file)
-                        arcname = os.path.relpath(file_path, source_path)
-                        zipf.write(file_path, arcname)
+                        full_path = os.path.join(root, file)
+                        zipf.write(full_path, os.path.relpath(full_path, current_dir))
             else:
                 zipf.write(source_path, os.path.basename(source_path))
-        print(f"Zipped to {zip_name}")
-    else:
-        print("Source file or folder not found.")
+        print(f"Success: '{zip_name}' created.")
+    except Exception as e:
+        print(f"Error creating ZIP: {e}")
+        
 def unzip_file(zip_name):
     zip_path = os.path.join(current_dir, zip_name)
-    if os.path.exists(zip_path) and zip_name.endswith('.zip'):
+
+    if not os.path.exists(zip_path) or not zipfile.is_zipfile(zip_path):
+        print("Error: ZIP file not found or invalid.")
+        return
+
+    try:
         with zipfile.ZipFile(zip_path, 'r') as zipf:
             zipf.extractall(current_dir)
-        print(f"Unzipped {zip_name}")
-    else:
-        print("ZIP file not found or invalid.")
+        print(f"Success: '{zip_name}' extracted.")
+    except Exception as e:
+        print(f"Error extracting ZIP: {e}")
 def move_file_or_folder(src, dest, root_mode=False):
     src_path = os.path.abspath(os.path.join(current_dir, src))
-    dest_path = os.path.abspath(os.path.join(current_dir if not root_mode else "voidos", dest))
+    dest_path = os.path.abspath(os.path.join("voidos" if root_mode else current_dir, dest))
 
-    # Beveiliging tegen buiten /0 navigeren als root_mode False is
+    # Voorkom dat normale gebruiker buiten `/data/0/` gaat
     if not root_mode and not src_path.startswith(BASE_DIR):
-        print("Access denied: You cannot move outside /data/0.")
+        print("Error: Access denied. Cannot move outside /data/0/")
+        return
+
+    if not os.path.exists(src_path):
+        print("Error: Source not found.")
         return
 
     try:
         shutil.move(src_path, dest_path)
-        print(f"Moved '{src}' to '{dest}'")
+        print(f"Success: '{src}' moved to '{dest}'")
     except Exception as e:
-        print(f"Error moving: {e}")
+        print(f"Error moving file: {e}")
 def show_uptime():
     uptime_seconds = time.time() - start_time
     hours = int(uptime_seconds // 3600)
@@ -88,16 +102,23 @@ def set_password():
 
 def check_password():
     if not os.path.exists(PASSWORD_FILE):
-        return True
-    with open(PASSWORD_FILE, 'r') as file:
-        data = json.load(file)
+        return True  # Geen wachtwoord ingesteld
+
+    try:
+        with open(PASSWORD_FILE, 'r') as file:
+            data = json.load(file)
         saved_hash = data.get("password")
+    except (json.JSONDecodeError, FileNotFoundError):
+        print("Error: Corrupt password file. Resetting password...")
+        os.remove(PASSWORD_FILE)
+        return True
+
     for _ in range(3):
         entered_password = input("Password: ")
         if hash_password(entered_password) == saved_hash:
             return True
-        else:
-            print("Incorrect password.")
+        print("Incorrect password.")
+
     print("Too many attempts. Shutting down.")
     shutdown()
     return False
@@ -193,18 +214,25 @@ def create_file(name):
 
 def show_file_content(name):
     path = os.path.join(current_dir, name)
+    if not os.path.exists(path):
+        print("Error: File not found.")
+        return
+    
     try:
         with open(path, 'r') as file:
             print(file.read())
-    except FileNotFoundError:
-        print("File not found.")
+    except Exception as e:
+        print(f"Error reading file: {e}")
 
 def show_ip():
     print("Your IP:", socket.gethostbyname(socket.gethostname()))
 
 def ping_host(host):
-    os.system(f"ping -c 4 {host}" if platform.system() != "Windows" else f"ping {host}")
-
+    if platform.system() == "Windows":
+        os.system(f"ping -n 4 {host}")  # -n op Windows
+    else:
+        os.system(f"ping -c 4 {host}")  # -c op Linux/macOS
+        
 def calculator():
     while True:
         try:
@@ -222,45 +250,48 @@ def show_time():
     print(datetime.now().strftime("%H:%M:%S"))
 
 def reset_system():
+    confirm = input("Warning: This will delete all files! Type 'yes' to continue: ")
+    if confirm.lower() != 'yes':
+        print("Reset cancelled.")
+        return
+
     print("Resetting system...")
-    time.sleep(3)
+    time.sleep(2)
+
     for filename in os.listdir(BASE_DIR):
         file_path = os.path.join(BASE_DIR, filename)
-        if os.path.isdir(file_path):
-            shutil.rmtree(file_path)
-        elif os.path.isfile(file_path):
-            os.remove(file_path)
+        try:
+            if os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+            elif os.path.isfile(file_path):
+                os.remove(file_path)
+        except Exception as e:
+            print(f"Error deleting {file_path}: {e}")
+
     if os.path.exists(PASSWORD_FILE):
         os.remove(PASSWORD_FILE)
-        print("Restarting...")
-        time.sleep(2)
-        os.system("python flame/os.py")
+
+    print("Restarting...")
+    time.sleep(2)
+    os.execv(sys.executable, ['python'] + sys.argv)
 def run_script(command):
     try:
         script_name = command.split(" ", 1)[1]
+        script_path = os.path.abspath(os.path.join(BASE_DIR, script_name))
 
-        # Maak volledig pad naar /voidos/data/0
-        base_dir = "flame/data/0"
-        script_path = os.path.join(base_dir, script_name)
-        
-        if not script_path.startswith(base_dir):
-            print("Access denied: Only scripts from flame/data/0 are allowed")
+        if not script_path.startswith(BASE_DIR) or not os.path.isfile(script_path):
+            print(f"Error: Unauthorized or missing script '{script_name}'")
             return
 
-        # Controleer of bestand bestaat
-        if not os.path.isfile(script_path):
-            print(f"Not found: {script_name}")
+        if not script_path.endswith('.py'):
+            print("Error: Only Python scripts (.py) are allowed to run.")
             return
 
-        # Voer het script uit
         subprocess.run([sys.executable, script_path], check=True)
-
     except IndexError:
         print("Usage: run <file.py>")
-    except FileNotFoundError:
-        print(f"Not found: {script_name}")
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error running script: {e}")       
 def restart():
     os.execv(sys.executable, ['python'] + sys.argv)
 
@@ -324,11 +355,28 @@ def list_files_by_extension(extension):
         print(f"[FILE] {f}")
 
 def antivirus():
-    os.system("rm -rf flame/data")
-    os.system("pip uninstall bs4 requests -q")
-    os.system("pip install bs4 requests -q")
-    os.execv(sys.executable, ['python'] + sys.argv)
+    confirm = input("Warning: This will erase all data and reinstall dependencies! Type 'yes' to continue: ")
+    if confirm.lower() != 'yes':
+        print("Antivirus cancelled.")
+        return
 
+    print("Erasing system files...")
+    for filename in os.listdir(BASE_DIR):
+        file_path = os.path.join(BASE_DIR, filename)
+        try:
+            if os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+            elif os.path.isfile(file_path):
+                os.remove(file_path)
+        except Exception as e:
+            print(f"Error deleting {file_path}: {e}")
+
+    print("Reinstalling dependencies...")
+    os.system("pip uninstall bs4 requests -y && pip install bs4 requests")
+
+    print("System rebooting...")
+    time.sleep(2)
+    os.execv(sys.executable, ['python'] + sys.argv)
 def search_files(name):
     files = [f for f in os.listdir(current_dir) if name in f]
     for f in files:
@@ -349,31 +397,33 @@ def set_env_variable(var, value):
 
 def view_env_variable(var):
     print(f"{var}={os.environ.get(var)}")
-
-def log_system_info():
-    with open("flame/data/0/system_info.txt", "w") as f:
-        f.write(f"System Info: {platform.uname()}\n")
-        f.write(f"Uptime: {time.time() - start_time} seconds\n")
-
+    
 def create_random_file(name, size):
     with open(os.path.join(current_dir, name), 'wb') as f:
         f.write(os.urandom(size))
     print(f"File {name} of size {size} bytes created.")
+    
+def log_system_info():
+    log_file = os.path.join(LOG_DIR, "system_info.txt")
+    with open(log_file, "w") as f:
+        f.write(f"System Info: {platform.uname()}\n")
+        f.write(f"Uptime: {time.time() - start_time} seconds\n")
 
 def view_logs():
-    if os.path.exists("flame/data/0/system_info.txt"):
-        with open("flame/data/0/system_info.txt", "r") as f:
+    log_file = os.path.join(LOG_DIR, "system_info.txt")
+    if os.path.exists(log_file):
+        with open(log_file, "r") as f:
             print(f.read())
     else:
         print("No logs found.")
 
 def clear_logs():
-    if os.path.exists("flame/data/0/system_info.txt"):
-        os.remove("flame/data/0/system_info.txt")
+    log_file = os.path.join(LOG_DIR, "system_info.txt")
+    if os.path.exists(log_file):
+        os.remove(log_file)
         print("Logs cleared.")
     else:
         print("No logs to clear.")
-
 def time_from_date():
     date_str = input("Enter a date (YYYY-MM-DD): ")
     try:
