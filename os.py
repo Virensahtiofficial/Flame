@@ -260,7 +260,7 @@ def reset_system():
     if confirm.lower() != 'yes':
         print("Reset cancelled.")
         return
-
+    
     print("Resetting system...")
     time.sleep(2)
 
@@ -279,6 +279,7 @@ def reset_system():
 
     print("Restarting...")
     time.sleep(2)
+    clear_screen()
     os.execv(sys.executable, ['python'] + sys.argv)
 def run_script(command):
     try:
