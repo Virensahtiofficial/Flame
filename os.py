@@ -57,7 +57,7 @@ def unzip_file(zip_name):
         print(f"Error extracting ZIP: {e}")
 def move_file_or_folder(src, dest, root_mode=False):
     src_path = os.path.abspath(os.path.join(current_dir, src))
-    dest_path = os.path.abspath(os.path.join("voidos" if root_mode else current_dir, dest))
+    dest_path = os.path.abspath(os.path.join("flame" if root_mode else current_dir, dest))
 
     # Voorkom dat normale gebruiker buiten `/data/0/` gaat
     if not root_mode and not src_path.startswith(BASE_DIR):
