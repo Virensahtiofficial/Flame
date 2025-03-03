@@ -416,6 +416,10 @@ def log_system_info():
         f.write(f"System Info: {platform.uname()}\n")
         f.write(f"Uptime: {time.time() - start_time} seconds\n")
 
+def find(filename):
+    import os
+    os.system(f"find / -name flame/data/0/{filename}")
+    
 def view_logs():
     log_file = os.path.join(LOG_DIR, "system_info.txt")
     if os.path.exists(log_file):
@@ -444,7 +448,12 @@ def time_from_date():
 def handle_interrupt(signal, frame):
     pass
 signal.signal(signal.SIGINT, handle_interrupt)
-
+def sysinfo():
+    import os
+    os.system("uname -a")
+    os.system("free -h")
+    os.system("df -h")
+    
 def main():
     boot()
     while True:
@@ -487,6 +496,9 @@ def main():
                 print("Usage: cat [file]")
         elif cmd == "date":
             show_date()
+        elif cmd == "find":
+            if args:
+                search_files(args[0])
         elif cmd == "time":
             show_time()
         elif cmd == "ip":
@@ -515,6 +527,8 @@ def main():
             show_help()
         elif cmd == "restart":
             restart()
+        elif cmd == "sysinfo":
+            sysinfo()        
         elif cmd == "reset":
             reset_system()
         elif cmd == "refresh":
