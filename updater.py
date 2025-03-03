@@ -12,7 +12,7 @@ bestand_pad = os.path.join(doelmap, bestand_naam)
 def clear_console():
     os.system("cls" if os.name == "nt" else "clear")  # Windows → cls, Andere OS'en → clear
 
-
+clear_console()
 print("Updating system...")
 time.sleep(3)
 
