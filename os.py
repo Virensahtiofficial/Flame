@@ -180,9 +180,10 @@ def show_help():
     print("  zip [file/folder] [name].zip - Compress a file or folder")
     print("  unzip [file].zip - Extract a ZIP file")
     print("  antivirus       - Wipe all system data (factory reset)")
-    print("  rootmv [file] [destination] - Move a file as root outside /data/0")
+    print("  rootmv [file] [destination] - Move a file as root outside /0")
     print("  update          - Download and install the latest system update")
-    
+    print("  sysinfo         - Ser system information")
+    print("  find [file]     - Search for file")
 def list_files():
     files = os.listdir(current_dir)
     for f in files:
