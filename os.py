@@ -6,6 +6,7 @@ import platform
 import subprocess
 import random
 import hashlib
+from sympy import sympify
 import json
 from datetime import datetime
 import time
@@ -230,26 +231,29 @@ def show_file_content(name):
             print(file.read())
     except Exception as e:
         print(f"Error reading file: {e}")
-
-def show_ip():
-    print("Your IP:", socket.gethostbyname(socket.gethostname()))
-
+        
+def get_ip():
+    try:
+        response = requests.get("https://api.ipify.org", timeout=5)
+        response.raise_for_status()
+        print("Your IP is:", response.text)
+    except requests.RequestException as e:
+        print("Network error:", e)
 def ping_host(host):
     if platform.system() == "Windows":
         os.system(f"ping -n 4 {host}")  # -n op Windows
     else:
         os.system(f"ping -c 4 {host}")  # -c op Linux/macOS
         
+        
 def calculator():
-    while True:
-        try:
-            expression = input("Calculator> ")
-            if expression.lower() == 'exit':
-                break
-            print("Result:", eval(expression))
-        except Exception as e:
-            print("Error:", e)
-
+    expr = input("Enter calculation: ")
+    try:
+        result = sympify(expr)
+        print("Result:", result)
+    except Exception as e:
+        print("Error:", e)
+        
 def show_date():
     print(datetime.now().strftime("%Y-%m-%d"))
 
@@ -418,7 +422,6 @@ def log_system_info():
         f.write(f"Uptime: {time.time() - start_time} seconds\n")
 
 def find(filename):
-    import os
     os.system(f"find / -name flame/data/0/{filename}")
     
 def view_logs():
@@ -503,7 +506,7 @@ def main():
         elif cmd == "time":
             show_time()
         elif cmd == "ip":
-            show_ip()
+            get_ip()
         elif cmd == "ping":
             if args:
                 ping_host(args[0])
