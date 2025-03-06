@@ -17,8 +17,8 @@ print("Updating system...")
 time.sleep(3)
 
 # Vereiste libraries reinstalleren
-os.system("pip uninstall requests tqdm bs4 -q -y")
-os.system("pip install requests tqdm bs4 -q")
+os.system("pip uninstall requests tqdm bs4 sympy -q -y")
+os.system("pip install requests tqdm bs4 sympy -q")
 
 # Controleer of de map bestaat, anders aanmaken
 if not os.path.exists(doelmap):
