@@ -101,7 +101,7 @@ def set_password():
     hashed = hash_password(password)
     with open(PASSWORD_FILE, 'w') as file:
         json.dump({"password": hashed}, file)
-    print("Your password is set.")
+    refresh()
 
 def check_password():
     if not os.path.exists(PASSWORD_FILE):
