@@ -185,6 +185,7 @@ def show_help():
     print("  update          - Download and install the latest system update")
     print("  sysinfo         - Ser system information")
     print("  find [file]     - Search for file")
+    print("  internet        - Connect to a ethernet cable")
 def list_files():
     files = os.listdir(current_dir)
     for f in files:
