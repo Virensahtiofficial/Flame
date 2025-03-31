@@ -397,8 +397,7 @@ def search_files(name):
 
 def random_number():
     print(random.randint(1, 100))
-def shell():
-    os.system("python3 flame/shell.py")
+
 def update():
     os.system("python flame/updater.py")
     
@@ -455,6 +454,7 @@ def handle_interrupt(signal, frame):
     pass
 signal.signal(signal.SIGINT, handle_interrupt)
 def sysinfo():
+    import os
     os.system("uname -a")
     os.system("free -h")
     os.system("df -h")
@@ -572,8 +572,6 @@ def main():
                 print("Usage: search [name]")
         elif cmd == "random":
             random_number()
-        elif cmd == "shell":
-            shell()   
         elif cmd == "mv":
             if len(args) == 2:
                 move_file_or_folder(args[0], args[1])
